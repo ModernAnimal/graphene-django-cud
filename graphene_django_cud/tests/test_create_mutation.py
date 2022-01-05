@@ -609,7 +609,7 @@ class TestCreateMutationCustomFields(TestCase):
                 custom_fields = {"bark": graphene.Boolean()}
 
             @classmethod
-            def before_save(cls, root, info, input, obj):
+            def before_save(cls, info, input, obj):
                 if input.get("bark"):
                     obj.bark_count += 1
                 return obj

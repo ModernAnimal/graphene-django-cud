@@ -1511,7 +1511,7 @@ class TestUpdateMutationCustomFields(TestCase):
                 custom_fields = {"bark": graphene.Boolean()}
 
             @classmethod
-            def before_save(cls, root, info, input, id, obj: Dog):
+            def before_save(cls, info, input, obj: Dog):
                 if input.get("bark"):
                     obj.bark_count += 1
                 return obj

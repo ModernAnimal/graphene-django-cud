@@ -84,8 +84,8 @@ class DjangoBatchDeleteMutation(DjangoCudBase):
         return super().before_mutate(root, info, input)
 
     @classmethod
-    def before_save(cls, root, info, ids, qs_to_delete):
-        return super().before_save(root, info, ids, qs_to_delete)
+    def before_save(cls, info, input, obj):
+        return super().before_save(info, input, obj)
 
     @classmethod
     def after_mutate(cls, root, info, ids, deletion_count, deleted_ids):
@@ -116,11 +116,6 @@ class DjangoBatchDeleteMutation(DjangoCudBase):
 
         qs_to_delete = cls.get_queryset(root, info, ids).filter(pk__in=ids)
 
-        updated_qs = cls.before_save(root, info, ids, qs_to_delete)
-
-        if updated_qs:
-            qs_to_delete = updated_qs
-
         # Find out which (global) ids are deleted, and which were not found.
         deleted_ids = [cls.get_return_id(id) for id in qs_to_delete.values_list("id", flat=True)]
 
@@ -129,7 +124,10 @@ class DjangoBatchDeleteMutation(DjangoCudBase):
 
         missed_ids = list(set(all_global_ids).difference(deleted_ids))
 
-        deletion_count, _ = qs_to_delete.delete()
+        deletion_count = len(qs_to_delete)
+        for obj in qs_to_delete:
+            cls.before_save(info, None, obj)
+            obj.delete()
 
         cls.after_mutate(root, info, ids, deletion_count, deleted_ids)
 
